@@ -6,6 +6,8 @@ The official door-access app wraps a single HTTPS request in a splash ad, inters
 
 This repository contains no third-party endpoints, application ids, secrets or keys. All protocol values live in a local, gitignored configuration file; only a placeholder template is published here. See [Protocol configuration](#protocol-configuration).
 
+Licensed under the [MIT License](LICENSE); see [License](#license) for scope and third-party notices.
+
 ---
 
 ## Contents
@@ -25,7 +27,8 @@ This repository contains no third-party endpoints, application ids, secrets or k
 - [Security model](#security-model)
 - [Troubleshooting](#troubleshooting)
 - [Project layout](#project-layout)
-- [Credits and disclaimer](#credits-and-disclaimer)
+- [Credits](#credits)
+- [License](#license)
 
 ---
 
@@ -337,6 +340,7 @@ If a phone is lost, delete `~/.quickopen/access_key` on the Mac, restart the ser
 |-- Status.command                 Double-click status report
 |-- Diagnostics.command            Double-click protocol check
 |-- THIRD_PARTY_NOTICES.md         Upstream MIT license notices
+|-- LICENSE                        MIT license for the original code in this repository
 |-- menubar/
 |   |-- QuickOpenBar.swift         Native menu bar app
 |   |-- Info.plist                 LSUIElement and local-network ATS settings
@@ -346,11 +350,16 @@ If a phone is lost, delete `~/.quickopen/access_key` on the Mac, restart the ser
 
 ---
 
-## Credits and disclaimer
+## Credits
 
 - The protocol layer was adapted from an MIT-licensed open-source Android client. The full attribution and license text are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - The application icon was adapted from Tabler Icons (MIT); see the same notices file.
 - `door_protocol.py` implements AES-128-ECB in pure Python and verifies it against the FIPS-197 vector at start-up.
-- This project is not affiliated with, endorsed by, or sponsored by any door-access vendor. All trademarks, server protocols and official clients belong to their respective owners and are not covered by any license granted here.
-- The software is intended **only** for a person using their own authorised account and a door they are permitted to open. Protocol values may change when the vendor updates its app; use the diagnostics tool and `QO_*` overrides to adapt.
-- Use at your own risk. No warranty is provided.
+
+## License
+
+The original code in this repository is released under the MIT License. See [LICENSE](LICENSE).
+
+Third-party derived material remains under its own MIT license, reproduced in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Trademarks, server-side protocols and official client software are not covered by this license.
+
+This project is not affiliated with, endorsed by, or sponsored by any door-access vendor. It is intended only for a person using their own authorised account and a door they are permitted to open. Protocol values may change when the vendor updates its app; use the diagnostics tool and `QO_*` overrides to adapt. Use at your own risk; no warranty is provided.
