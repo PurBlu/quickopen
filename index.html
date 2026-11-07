@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b1120">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="秒开门">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<title>秒开门</title>
+<style>
+:root{--bg:#0b1120;--bg2:#111b2e;--card:#16223a;--line:#26344e;--txt:#eaf1ff;--dim:#8fa1c0;
+ --mute:#61738f;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--accent:#38bdf8;--shadow:0 18px 50px rgba(0,0,0,.42)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--txt);
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+body{background:radial-gradient(1100px 600px at 50% -14%,#1b2c4b 0%,var(--bg) 62%) fixed;
+ padding:calc(env(safe-area-inset-top, 0px) + 18px) 16px 0;display:flex;justify-content:center}
+.app{width:100%;max-width:460px;display:flex;flex-direction:column;gap:14px;min-height:calc(100dvh - 36px);
+ padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;letter-spacing:.5px}
+.logo{width:30px;height:30px;border-radius:9px;background:#0ea5e9;display:grid;place-items:center}
+.logo svg{width:19px;height:19px}
+.pill{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--dim);background:rgba(255,255,255,.045);
+ border:1px solid var(--line);padding:6px 11px;border-radius:999px;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mute);flex:none}
+.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}.dot.demo{background:var(--warn)}
+.dot.bad{background:var(--bad)}
+.view{display:none;flex-direction:column;gap:14px}.view.active{display:flex}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.065),rgba(255,255,255,.015));
+ border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.hero{display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px 18px}
+.door-label{font-size:12px;color:var(--dim);letter-spacing:1px;text-align:center}
+.door-select{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:6px 0 2px;max-width:100%}
+.chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+ color:var(--dim);font-size:11px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.on{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.45);color:#a7f3d0}
+.openbtn{position:relative;width:190px;height:190px;margin:12px auto 4px;border-radius:50%;border:none;cursor:pointer;flex:none;
+ background:conic-gradient(from 210deg,#0ea5e9,#22d3ee,#34d399,#0ea5e9);
+ box-shadow:0 0 0 9px rgba(56,189,248,.07),0 0 42px rgba(52,211,153,.22),var(--shadow);
+ display:grid;place-items:center;color:#04121d;transition:transform .13s;touch-action:manipulation}
+.openbtn:active{transform:scale(.96)}.openbtn[disabled]{filter:saturate(.4);cursor:default}
+.inner{position:absolute;inset:9px;border-radius:50%;background:linear-gradient(160deg,#0f1b30,#0a1324);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--txt)}
+.inner svg{width:52px;height:52px;stroke:var(--ok)}
+.inner strong{font-size:23px;letter-spacing:4px;color:var(--txt);font-weight:700}
+.inner small{font-size:11px;color:var(--mute)}
+.openbtn.spin .inner svg{animation:pulse 1s ease-in-out infinite}
+.openbtn.done .inner svg{animation:pop .35s ease}.openbtn.fail .inner svg{stroke:var(--bad)}
+@keyframes pulse{0%,100%{opacity:.45;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.16)}100%{transform:scale(1)}}
+.result{width:100%;margin-top:8px;border-radius:13px;padding:10px 13px;font-size:12.5px;line-height:1.5;
+ background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--dim);word-break:break-all}
+.result.ok{border-color:rgba(52,211,153,.35);color:#a7f3d0;background:rgba(52,211,153,.07)}
+.result.bad{border-color:rgba(248,113,113,.35);color:#fecaca;background:rgba(248,113,113,.07)}
+.row{display:flex;gap:9px;width:100%;margin-top:10px}
+.btn{flex:1;padding:11px;border-radius:13px;border:1px solid var(--line);background:rgba(255,255,255,.045);
+ color:var(--dim);font-size:12.5px;cursor:pointer;font-weight:600;font-family:inherit}
+.btn:active{transform:scale(.98)}.btn.primary{background:rgba(56,189,248,.13);border-color:rgba(56,189,248,.38);color:#bae6fd}
+.btn.good{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.38);color:#a7f3d0}
+.btn:disabled{opacity:.45}
+.notice{border-left:3px solid var(--accent);padding:11px 13px;background:rgba(56,189,248,.07);
+ color:#bae6fd;font-size:12px;line-height:1.7;border-radius:0 11px 11px 0;width:100%}
+.notice.warn{border-color:var(--warn);background:rgba(251,191,36,.07);color:#fde68a}
+h2.sec{font-size:12px;color:var(--accent);letter-spacing:1px;margin:0 0 12px;font-weight:600}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+.kv:last-child{border-bottom:none}.kv span:first-child{color:var(--mute);flex:none}.kv span:last-child{color:var(--dim);text-align:right;word-break:break-all}
+.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}
+.metric div{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:13px;padding:11px 8px;text-align:center}
+.metric b{display:block;font-size:18px;color:var(--ok);font-variant-numeric:tabular-nums}
+.metric small{font-size:10px;color:var(--mute)}
+.events{max-height:190px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.8;color:var(--dim)}
+.events div{white-space:pre-wrap;word-break:break-all}
+label.field{display:block;margin:11px 0 0}
+label.field>span{display:block;font-size:11.5px;color:var(--dim);margin-bottom:6px}
+input{width:100%;background:#0c1526;color:var(--txt);border:1px solid var(--line);border-radius:11px;
+ padding:11px 12px;font-size:13px;font-family:inherit;outline:none}
+input:focus{border-color:var(--accent)}input[type=checkbox]{width:auto;margin-right:8px;accent-color:var(--ok)}
+.switchline{display:flex;align-items:center;font-size:12.5px;color:var(--dim);margin:12px 0 0;cursor:pointer}
+.flow{display:flex;gap:8px;align-items:flex-end}.flow>div{flex:1}.flow .btn{flex:0 0 auto;padding:11px 14px}
+.tip{font-size:11.5px;color:var(--mute);line-height:1.7;margin:9px 0 0}
+.mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.mini .btn{flex:1 1 auto;padding:9px 11px;font-size:12px}
+/* 底部 Tab：真正固定在视口底部，不随页面滚动。
+   外层铺满到屏幕底边并吃掉 home indicator 安全区，按钮胶囊始终位于手势条上方。 */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;
+ padding:10px 16px 10px;
+ background:rgba(11,17,32,.94);
+ -webkit-backdrop-filter:saturate(150%) blur(18px);
+ backdrop-filter:saturate(150%) blur(18px);
+ border-top:1px solid var(--line)}
+@supports (padding-bottom:env(safe-area-inset-bottom)){
+ .tabbar{padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px))}
+}
+.tabbar-inner{width:100%;max-width:460px;display:flex;gap:6px;
+ background:rgba(255,255,255,.045);border:1px solid var(--line);
+ border-radius:17px;padding:5px}
+.tabbar button{flex:1;background:none;border:none;color:var(--mute);font-size:11.5px;padding:10px 4px;
+ border-radius:12px;cursor:pointer;font-family:inherit;font-weight:600}
+.tabbar button.on{background:rgba(56,189,248,.13);color:#bae6fd}
+/* 桌面宽屏不再把内容撑到整屏高，避免出现一大块空白 */
+@media(min-width:600px){.app{min-height:auto}}
+.foot{text-align:center;font-size:10.5px;color:var(--mute);line-height:1.7;margin:2px 0 0}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 88px);transform:translate(-50%,12px);
+ background:#1b2b45;border:1px solid var(--line);color:var(--txt);padding:10px 17px;border-radius:12px;
+ font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:var(--shadow);max-width:88vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><path d="M6 21V5a2 2 0 0 1 2-2h6.5"/><path d="M14.5 12.5V21"/><path d="M14 7h6"/><path d="M17.5 4.5L20 7l-2.5 2.5"/></svg></span>秒开门</div>
+    <div class="pill"><span class="dot" id="dot"></span><span id="statusText">连接中…</span></div>
+  </header>
+
+  <!-- 开门 -->
+  <section class="view active" id="v-open">
+    <div class="card hero">
+      <div class="door-label" id="doorLabel">默认门</div>
+      <div class="door-select" id="doorChips"></div>
+      <button class="openbtn" id="openBtn"><span class="inner">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M3 21h18"/><circle cx="14.5" cy="12" r="1.2"/></svg>
+        <strong>开 门</strong><small id="btnSub">轻触一下</small>
+      </span></button>
+      <div class="result" id="result">准备就绪</div>
+      <div class="row"><button class="btn" id="touchBtn">刷新会话</button><button class="btn" id="syncBtn">同步钥匙</button></div>
+    </div>
+    <div class="notice warn" id="loginNotice" style="display:none">还没有登录：在官方「亲邻开门」App 点一次「获取验证码」，把短信里的码填进「设置」即可。登录一次后长期保持。<br><button class="btn good" style="margin-top:10px;width:100%" onclick="go('set')">去登录</button></div>
+    <div class="notice">所有平台看到的是同一个页面：iPhone / Android 用「添加到主屏幕」，Mac 用浏览器或菜单栏小工具。开门指令由家里的 Mac mini 发出，页面本身不接触门禁协议。</div>
+  </section>
+
+  <!-- 状态 -->
+  <section class="view" id="v-status">
+    <div class="card">
+      <h2 class="sec">服务运行</h2>
+      <div class="metric">
+        <div><b id="mUptime">—</b><small>运行时长</small></div>
+        <div><b id="mRss">—</b><small>内存 MB</small></div>
+        <div><b id="mThreads">—</b><small>线程数</small></div>
+      </div>
+      <div class="kv"><span>CPU 占用（启动至今均值）</span><span id="sCpu">—</span></div>
+      <div class="kv"><span>服务状态</span><span id="sOnline">—</span></div>
+      <div class="kv"><span>版本 / PID</span><span id="sVer">—</span></div>
+      <div class="kv"><span>下次会话保活</span><span id="sTouch">—</span></div>
+      <div class="kv"><span>服务端时间</span><span id="sTime">—</span></div>
+    </div>
+    <div class="card">
+      <h2 class="sec">账号与会话</h2>
+      <div class="kv"><span>登录状态</span><span id="sLogin">—</span></div>
+      <div class="kv"><span>绑定手机</span><span id="sPhone">—</span></div>
+      <div class="kv"><span>登录时间</span><span id="sLoginAt">—</span></div>
+      <div class="kv"><span>上次成功请求</span><span id="sLastOk">—</span></div>
+      <div class="kv"><span>已授权钥匙</span><span id="sKeys">—</span></div>
+    </div>
+    <div class="card">
+      <h2 class="sec">开门统计</h2>
+      <div class="metric">
+        <div><b id="mOk">—</b><small>成功</small></div>
+        <div><b id="mFail">—</b><small>失败</small></div>
+        <div><b id="mLast">—</b><small>最近一次</small></div>
+      </div>
+      <div class="kv"><span>最近错误</span><span id="sErr">无</span></div>
+      <div class="kv"><span>最近上游响应</span><span id="sUpstream">无</span></div>
+      <div class="mini"><button class="btn" onclick="loadStatus(true)">立即刷新</button></div>
+    </div>
+    <div class="card">
+      <h2 class="sec">协议体检</h2>
+      <p class="tip">官方改协议时，一键判断哪一段还能用。全部用假手机号 / 假验证码 / 假会话，不会发短信、不会登录、不会开门。</p>
+      <div class="mini"><button class="btn primary" id="diagBtn">运行体检</button></div>
+      <div class="events" id="diagOut" style="margin-top:11px">尚未运行</div>
+    </div>
+    <div class="card">
+      <h2 class="sec">最近事件</h2>
+      <div class="events" id="events">加载中…</div>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="view" id="v-set">
+    <div class="card">
+      <h2 class="sec">账号登录</h2>
+      <div class="notice warn" style="margin-bottom:10px">官方在 5.3.x 给<b>发短信的网关</b>加了新版 WAF 验签，旧的 appid/appsecret 签名已不被识别；但<b>登录、钥匙、开门三个接口仍然完全有效</b>。所以验证码请在官方「亲邻开门」App 里点一次「获取验证码」，把收到的码填到下面即可——验证码由服务端按手机号下发，用哪个客户端取都一样。</div>
+      <p class="tip">只需这样登录一次，之后会话由 Mac mini 每 15 分钟自动保活，日常开门完全不碰官方 App。万一会话失效，重复一次即可。</p>
+      <label class="field"><span>手机号</span><input id="f_phone" inputmode="numeric" placeholder="11 位手机号" autocomplete="tel"></label>
+      <div class="flow" style="margin-top:9px"><div><label class="field" style="margin:0"><span>短信验证码（官方 App 里收）</span><input id="f_code" inputmode="numeric" placeholder="4-8 位"></label></div><button class="btn" id="sendCode">取码说明</button></div>
+      <p class="tip" id="codeTip" style="color:#bae6fd"></p>
+      <div class="mini"><button class="btn good" id="doLogin">登录并同步钥匙</button><button class="btn" id="doLogout">退出登录</button></div>
+    </div>
+    <div class="card">
+      <h2 class="sec">连接</h2>
+      <label class="field"><span>服务地址</span><input id="f_backend" placeholder="http://192.168.1.10:8787"></label>
+      <label class="field"><span>访问密钥</span><input id="f_key" placeholder="从配网链接自动填入" autocomplete="off"></label>
+      <p class="tip">用安装脚本打印的<b>配网链接</b>在手机上打开一次，地址和密钥会自动填好，之后「添加到主屏幕」即可。局域网外的远程访问建议配 Tailscale，不要把端口映射到公网。</p>
+      <div class="mini"><button class="btn primary" id="saveConn">保存连接</button><button class="btn" id="ping">测试连接</button></div>
+      <p class="tip" id="onboardTip"></p>
+    </div>
+    <div class="card">
+      <h2 class="sec">偏好</h2>
+      <label class="switchline"><input type="checkbox" id="f_sound" checked> 成功提示音</label>
+      <label class="switchline"><input type="checkbox" id="f_haptic" checked> 震动反馈</label>
+      <label class="switchline"><input type="checkbox" id="f_demo"> 演示模式（不联网，模拟数据）</label>
+      <div class="mini"><button class="btn" id="wipe">清空本机配置</button></div>
+      <div class="notice warn" style="margin-top:13px">这个页面能打开你家的单元门。配网链接含密钥，别发到群里；手机丢失后请到 Mac 上删除 <b>~/.quickopen/access_key</b> 并重启服务换一把新密钥。凭据只存在本机，不会上传。</div>
+    </div>
+  </section>
+
+  <p class="foot">Mac mini 本地常驻 · 零第三方依赖 · 无广告 / 无统计 / 无追踪<br>仅供本人在已获授权的小区与门禁使用</p>
+</div>
+
+<nav class="tabbar">
+  <div class="tabbar-inner">
+    <button class="on" data-v="open">开门</button><button data-v="status">状态</button><button data-v="set">设置</button>
+  </div>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var LS='qo.console.v2';
+var DEF={backend:'',key:'',demo:false,sound:true,haptic:true,keyId:''};
+var cfg=load(),st=null,busy=false,timer=null;
+var $=function(id){return document.getElementById(id);};
+
+function isLocal(){return location.protocol==='file:'||/^(127\.0\.0\.1|localhost)$/.test(location.hostname);}
+function load(){
+  try{
+    var raw=localStorage.getItem(LS);
+    if(!raw){var d=JSON.parse(JSON.stringify(DEF));d.backend=location.protocol.startsWith('http')?location.origin:'';
+      d.demo=location.protocol==='file:';return d;}
+    var o=JSON.parse(raw),out=JSON.parse(JSON.stringify(DEF));
+    Object.keys(DEF).forEach(function(k){if(o[k]!==undefined)out[k]=o[k];});return out;
+  }catch(e){var d=JSON.parse(JSON.stringify(DEF));d.demo=true;return d;}
+}
+function save(){try{localStorage.setItem(LS,JSON.stringify(cfg));}catch(e){}}
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2400);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function fmtTime(ts){if(!ts)return '—';var d=new Date(ts*1000);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function fmtDur(s){s=Math.max(0,Math.floor(s));if(s<60)return s+'秒';if(s<3600)return Math.floor(s/60)+'分';if(s<86400)return Math.floor(s/3600)+'小时'+Math.floor(s%3600/60)+'分';return Math.floor(s/86400)+'天'+Math.floor(s%86400/3600)+'小时';}
+function beep(ok){if(!cfg.sound)return;try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  var a=new C(),o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=ok?880:250;
+  g.gain.setValueAtTime(.07,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.16);
+  o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.17);setTimeout(function(){a.close();},400);}catch(e){}}
+function buzz(){if(cfg.haptic&&navigator.vibrate)try{navigator.vibrate(32);}catch(e){}}
+
+/* ---------- 配网链接： #k=密钥[&h=服务地址] ---------- */
+function applyHash(){
+  var h=location.hash.replace(/^#/,'');if(!h)return;
+  var p=new URLSearchParams(h),k=p.get('k'),host=p.get('h');
+  if(k){cfg.key=k;cfg.demo=false;}
+  if(host){try{cfg.backend=new URL(host).origin;}catch(e){}}
+  else if(k&&location.protocol.startsWith('http')){cfg.backend=location.origin;}
+  if(k){save();try{history.replaceState(null,'',location.pathname);}catch(e){}toast('已自动完成配网');}
+}
+
+/* ---------- 演示数据 ---------- */
+var demo={logged_in:true,session_invalid:false,ok:true,version:'2.0.0 (演示)',uptime_s:37245,pid:0,rss_mb:14.2,cpu_pct:0.01,threads:2,
+ phone_hint:'***8000',login_at:Date.now()/1000-86400,last_ok_at:Date.now()/1000-120,
+ keys:[{id:'18523:225237',name:'测试小区 3栋1单元门'},{id:'18523:225238',name:'测试小区 南门'}],
+ default_key_id:'18523:225237',stats:{open_ok:12,open_fail:0,last_open_at:Date.now()/1000-3600,last_error:''},
+ touch_interval:900,next_touch_s:430,events:['11-07 23:10  开门      测试小区 3栋1单元门 · 开门成功 · 312ms',
+ '11-07 22:41  保活      会话已刷新','11-07 22:02  钥匙      已同步 2 把门禁钥匙'],server_time:'演示时间'};
+function demoReply(path,body){
+  return new Promise(function(r){setTimeout(function(){
+    if(path==='/api/status')return r(JSON.parse(JSON.stringify(demo)));
+    if(path==='/api/open')return r({ok:true,message:'演示模式：模拟开门成功',ms:280,key:'测试小区 3栋1单元门'});
+    if(path==='/api/login')return r({ok:true,message:'演示登录成功',keys:demo.keys});
+    if(path==='/api/onboard')return r({ok:true,key:'DEMO',link:'(演示模式)'});
+    if(path==='/api/health')return r({ok:true,version:'demo'});
+    return r({ok:true,message:'演示模式',keys:demo.keys,lines:demo.events});
+  },260);});
+}
+function api(path,method,body){
+  if(cfg.demo)return demoReply(path,body||{});
+  var base=(cfg.backend||(location.protocol.startsWith('http')?location.origin:'')).replace(/\/+$/,'');
+  if(!base)return Promise.reject(new Error('尚未配置服务地址，请到「设置」填写'));
+  var opt={method:method||'GET',headers:{'Content-Type':'application/json','X-Key':cfg.key}};
+  if(method==='POST')opt.body=JSON.stringify(body||{});
+  return fetch(base+path,opt).then(function(r){return r.json();});
+}
+
+/* ---------- 状态 ---------- */
+function setPill(kind,text){$('dot').className='dot'+(kind?' '+kind:'');$('statusText').textContent=text;}
+function renderStatus(j){
+  st=j;
+  $('mUptime').textContent=j.uptime_s>=86400?Math.floor(j.uptime_s/86400)+'天':Math.floor(j.uptime_s/3600)+'时';
+  $('mRss').textContent=j.rss_mb;$('mThreads').textContent=j.threads;
+  $('sCpu').textContent=(j.cpu_pct!==undefined?j.cpu_pct:'—')+' %';
+  $('sOnline').textContent=j.ok?'● 在线':'● 离线';$('sVer').textContent=j.version+' / '+(j.pid||'—');
+  $('sTouch').textContent=fmtDur(j.next_touch_s||0)+'后（每 '+Math.round((j.touch_interval||900)/60)+' 分钟）';
+  $('sTime').textContent=j.server_time||'—';
+  $('sLogin').textContent=!j.logged_in?'未登录':(j.session_invalid?'⚠ 会话失效，请重新登录':'● 已登录');
+  $('sPhone').textContent=j.phone_hint||'—';$('sLoginAt').textContent=fmtTime(j.login_at);
+  $('sLastOk').textContent=fmtTime(j.last_ok_at);$('sKeys').textContent=(j.keys||[]).length+' 把';
+  var s=j.stats||{};$('mOk').textContent=s.open_ok||0;$('mFail').textContent=s.open_fail||0;
+  $('mLast').textContent=s.last_open_at?fmtTime(s.last_open_at):'—';
+  $('sErr').textContent=s.last_error||'无';$('sUpstream').textContent=j.last_upstream||'无';
+  $('events').innerHTML=(j.events||[]).length?j.events.slice().reverse().map(function(x){return '<div>'+esc(x)+'</div>';}).join(''):'<div>暂无事件</div>';
+  renderDoors(j);
+  $('loginNotice').style.display=j.logged_in?'none':'block';
+  if(cfg.demo)setPill('demo','演示模式');
+  else setPill(j.logged_in?'on':'bad',j.logged_in?'已登录 · 服务在线':'待登录 · 服务在线');
+}
+function renderDoors(j){
+  var keys=j.keys||[];if(!keys.length){$('doorChips').innerHTML='';$('doorLabel').textContent='尚未同步钥匙';return;}
+  var cur=cfg.keyId||j.default_key_id||keys[0].id;
+  if(!keys.some(function(k){return k.id===cur;}))cur=keys[0].id;
+  $('doorChips').innerHTML=keys.length>1?keys.map(function(k){
+    return '<button class="chip'+(k.id===cur?' on':'')+'" data-id="'+esc(k.id)+'">'+esc(k.name)+'</button>';}).join(''):'';
+  var found=keys.filter(function(k){return k.id===cur;})[0];
+  $('doorLabel').textContent=found?found.name:'默认门';
+  Array.prototype.forEach.call($('doorChips').children,function(b){
+    b.onclick=function(){cfg.keyId=b.dataset.id;save();renderDoors(j);
+      api('/api/set-default','POST',{key_id:b.dataset.id}).catch(function(){});
+      toast('已切换到：'+b.textContent);};
+  });
+}
+function loadStatus(showToast){
+  return api('/api/status').then(function(j){
+    if(j&&j.version)renderStatus(j);
+    else if(j&&j.ok===false){setPill('bad','接口错误');$('result').className='result bad';
+      $('result').textContent='✕ '+(j.message||'服务返回错误');}
+    if(showToast)toast('状态已刷新');return j;})
+    .catch(function(e){setPill('bad','服务离线');$('result').className='result bad';
+      $('result').textContent='连不上服务：'+e.message+'。检查 Mac mini 是否在跑、地址和密钥是否正确。';
+      if(showToast)toast('连不上服务');return null;});
+}
+
+/* ---------- 动作 ---------- */
+function setBtn(state){var b=$('openBtn');b.className='openbtn'+(state?' '+state:'');b.disabled=state==='spin';
+  $('btnSub').textContent={spin:'正在发送…',done:'已发送',fail:'点此重试'}[state]||'轻触一下';}
+function doOpen(){
+  if(busy)return;busy=true;setBtn('spin');$('result').className='result';$('result').textContent='正在发送开门指令…';buzz();
+  api('/api/open','POST',{key_id:cfg.keyId||undefined}).then(function(j){
+    if(j&&j.ok){setBtn('done');$('result').className='result ok';$('result').textContent='✓ '+(j.message||'开门成功')+'  ·  '+j.ms+'ms';beep(true);}
+    else{setBtn('fail');$('result').className='result bad';$('result').textContent='✕ '+(j&&j.message||'开门失败');beep(false);
+      if(j&&/登录|失效|过期/.test(j.message))setTimeout(function(){go('set');},900);}
+    setTimeout(function(){setBtn('');},1500);
+  }).catch(function(e){setBtn('fail');$('result').className='result bad';$('result').textContent='✕ '+e.message;
+    beep(false);setTimeout(function(){setBtn('');},1500);})
+  .then(function(){busy=false;loadStatus();});
+}
+function go(v){
+  Array.prototype.forEach.call(document.querySelectorAll('.view'),function(x){x.classList.toggle('active',x.id==='v-'+v);});
+  Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(x){x.classList.toggle('on',x.dataset.v===v);});
+  if(v==='status')loadStatus();
+  window.scrollTo(0,0);
+}
+function bind(){
+  Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(b){b.onclick=function(){go(b.dataset.v);};});
+  $('openBtn').onclick=doOpen;
+  $('touchBtn').onclick=function(){api('/api/touch','POST',{}).then(function(j){toast(j&&j.ok?'会话已刷新':'刷新失败：'+(j&&j.message||''));loadStatus();});};
+  $('syncBtn').onclick=function(){api('/api/refresh-keys','POST',{}).then(function(j){toast(j&&j.ok?'已同步 '+j.keys.length+' 把钥匙':'同步失败：'+(j&&j.message||''));loadStatus();});};
+  $('sendCode').onclick=function(){
+    var p=$('f_phone').value.trim();if(!p){toast('先填手机号');return;}
+    $('sendCode').disabled=true;
+    api('/api/send-code','POST',{phone:p}).then(function(j){
+      $('codeTip').textContent=j&&j.message||'';
+      if(j&&j.ok)toast(j.external?'请到官方 App 获取验证码':'验证码已发送');else toast(j&&j.message||'失败');
+      $('sendCode').disabled=false;})
+      .catch(function(e){$('codeTip').textContent=e.message;toast(e.message);$('sendCode').disabled=false;});
+  };
+  $('diagBtn').onclick=function(){
+    $('diagBtn').disabled=true;$('diagOut').textContent='正在体检…';
+    api('/api/diagnose').then(function(j){
+      if(!j||!j.checks){$('diagOut').textContent='体检失败：'+(j&&j.message||'无返回');$('diagBtn').disabled=false;return;}
+      var html=j.checks.map(function(c){
+        var color={ok:'#34d399',blocked:'#f87171',gone:'#fbbf24',unknown:'#8fa1c0'}[c.state]||'#8fa1c0';
+        return '<div><span style="color:'+color+'">●</span> '+esc(c.name)+' — '+esc(c.note)+'</div>';}).join('');
+      html+='<div style="margin-top:8px;color:#bae6fd">结论：'+esc(j.conclusion||'')+'</div>';
+      $('diagOut').innerHTML=html;$('diagBtn').disabled=false;
+    }).catch(function(e){$('diagOut').textContent='体检失败：'+e.message;$('diagBtn').disabled=false;});
+  };
+  $('doLogin').onclick=function(){
+    var p=$('f_phone').value.trim(),c=$('f_code').value.trim();
+    if(!p||!c){toast('手机号和验证码都要填');return;}
+    $('doLogin').disabled=true;toast('正在登录…');
+    api('/api/login','POST',{phone:p,code:c}).then(function(j){
+      toast(j&&j.ok?'登录成功':('登录失败：'+(j&&j.message||'')));$('doLogin').disabled=false;
+      if(j&&j.ok){$('f_code').value='';go('open');}loadStatus();
+    }).catch(function(e){toast(e.message);$('doLogin').disabled=false;});
+  };
+  $('doLogout').onclick=function(){if(!confirm('退出后需要重新收验证码登录，确定？'))return;
+    api('/api/logout','POST',{}).then(function(){toast('已退出');loadStatus();});};
+  $('saveConn').onclick=function(){cfg.backend=$('f_backend').value.trim().replace(/\/+$/,'');cfg.key=$('f_key').value.trim();
+    cfg.demo=false;$('f_demo').checked=false;save();toast('连接已保存');loadStatus(true);};
+  $('ping').onclick=function(){api('/api/health').then(function(j){toast(j&&j.ok?'服务在线 '+(j.version||''):'服务异常');})
+    .catch(function(e){toast('连不上：'+e.message);});};
+  $('f_demo').onchange=function(){cfg.demo=this.checked;save();setPill('demo',cfg.demo?'演示模式':'已连接');loadStatus();};
+  $('f_sound').onchange=function(){cfg.sound=this.checked;save();};
+  $('f_haptic').onchange=function(){cfg.haptic=this.checked;save();};
+  $('wipe').onclick=function(){if(!confirm('清除本机保存的服务地址与密钥？'))return;
+    localStorage.removeItem(LS);cfg=JSON.parse(JSON.stringify(DEF));cfg.demo=true;save();
+    $('f_backend').value='';$('f_key').value='';$('f_demo').checked=true;syncForm();loadStatus();toast('已清空');};
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)loadStatus();});
+}
+function syncForm(){
+  $('f_backend').value=cfg.backend||'';$('f_key').value=cfg.key||'';
+  $('f_sound').checked=!!cfg.sound;$('f_haptic').checked=!!cfg.haptic;$('f_demo').checked=!!cfg.demo;
+}
+function init(){
+  applyHash();bind();syncForm();
+  if(cfg.demo)setPill('demo','演示模式');else setPill('','连接中…');
+  loadStatus();
+  timer=setInterval(function(){if(!document.hidden)loadStatus();},20000);
+  if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('./sw.js').catch(function(){});
+  if(isLocal()){api('/api/onboard').then(function(j){if(j&&j.link)$('onboardTip').textContent='本机配网链接：'+j.link;}).catch(function(){});}
+}
+window.go=go;
+init();
+})();
+</script>
+</body>
+</html>

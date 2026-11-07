@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "秒开门",
+  "short_name": "秒开门",
+  "description": "连接家里 Mac mini 的开门服务，一键开单元门，无广告、无跳转、可离线启动",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "./icon-dark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-mono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "monochrome" }
+  ]
+}

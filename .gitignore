@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# macOS
+.DS_Store
+.AppleDouble
+._*
+
+# Compiled menu bar app (regenerate with menubar/build.sh)
+menubar/*.app/
+
+# Local runtime state and credentials — never commit these
+.quickopen/
+state.json
+access_key
+*.local.py
+protocol_config.py
+.env
+.env.*
+*.log
+
+# Temporary previews / scratch files
+_preview_*.html
+*.tmp
